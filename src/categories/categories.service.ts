@@ -1,17 +1,48 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaService } from 'src/prisma.service';
 import { MakeSlugger } from 'helper/slug';
 import { FilterDto } from 'helper/dto/Filter.dto';
+import {
+  FormatDateToEndOfDay,
+  FormatDateToStartOfDay,
+} from 'helper/formatDate';
 
 @Injectable()
 export class CategoriesService {
   constructor(private prismaService: PrismaService) {}
+
+  // ! Create Categories
   async create(createCategoryDto: CreateCategoryDto) {
     try {
       const { name, description, short_description } = createCategoryDto;
       const slug = MakeSlugger(name);
+      // ? Check Name and Slug
+      const findCategories = await this.prismaService.categories.findFirst({
+        where: {
+          OR: [
+            {
+              name,
+            },
+            {
+              slug,
+            },
+          ],
+        },
+      });
+      if (findCategories) {
+        throw new HttpException(
+          { message: 'Tên danh mục đã tồn tại' },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      // ? Create Categories
       const categories = await this.prismaService.categories.create({
         data: {
           name,
@@ -28,13 +59,14 @@ export class CategoriesService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new HttpException(
-        { message: 'Tạo danh mục thất bại', error },
-        HttpStatus.BAD_REQUEST,
+      console.log('Lỗi từ categories.service.ts -> create', error);
+      throw new InternalServerErrorException(
+        'Đã có lỗi xảy ra, vui lòng thử lại sau !',
       );
     }
   }
 
+  // ! Get All Categories
   async findAll(query: FilterDto) {
     try {
       const page = Number(query.page) || 1;
@@ -42,76 +74,76 @@ export class CategoriesService {
       const search = query.search || '';
       const skip = (page - 1) * itemsPerPage;
 
+      const startDate = query.startDate
+        ? FormatDateToStartOfDay(query.startDate)
+        : null;
+      const endDate = query.endDate
+        ? FormatDateToEndOfDay(query.endDate)
+        : null;
+
+      const sortRangeDate: any =
+        startDate && endDate
+          ? {
+              created_at: {
+                gte: new Date(startDate),
+                lte: new Date(endDate),
+              },
+            }
+          : {};
+
+      const whereConditions: any = {
+        deleted: false,
+        OR: [
+          {
+            name: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            description: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            short_description: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
+        ...sortRangeDate,
+      };
+
       const [res, total] = await this.prismaService.$transaction([
         this.prismaService.categories.findMany({
-          where: {
-            deleted: false,
-            OR: [
-              {
-                name: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                description: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                short_description: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-            ],
-          },
+          where: whereConditions,
           skip,
           take: itemsPerPage,
+          orderBy: {
+            created_at: 'desc',
+          },
         }),
         this.prismaService.categories.count({
-          where: {
-            deleted: false,
-            OR: [
-              {
-                name: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                description: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                short_description: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-            ],
-          },
+          where: whereConditions,
         }),
       ]);
 
       const lastPage = Math.ceil(total / itemsPerPage);
-      const nextPage = page >= lastPage ? null : page + 1;
-      const prevPage = page <= 1 ? null : page - 1;
+      const paginationInfo = {
+        lastPage,
+        nextPage: page < lastPage ? page + 1 : null,
+        prevPage: page > 1 ? page - 1 : null,
+        currentPage: page,
+        itemsPerPage,
+        total,
+      };
 
       throw new HttpException(
         {
           data: res,
-          pagination: {
-            total,
-            itemsPerPage,
-            lastPage,
-            nextPage,
-            prevPage,
-            currentPage: page,
-          },
+          pagination: paginationInfo,
         },
         HttpStatus.OK,
       );
@@ -119,13 +151,14 @@ export class CategoriesService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new HttpException(
-        { message: 'Lấy danh sách danh mục thất bại', error },
-        HttpStatus.BAD_REQUEST,
+      console.log('Lỗi từ categories.service.ts -> ', error);
+      throw new InternalServerErrorException(
+        'Đã có lỗi xảy ra, vui lòng thử lại sau !',
       );
     }
   }
 
+  // ! Get All Deleted Categories
   async findAllDeleted(query: FilterDto) {
     try {
       const page = Number(query.page) || 1;
@@ -133,76 +166,76 @@ export class CategoriesService {
       const search = query.search || '';
       const skip = (page - 1) * itemsPerPage;
 
+      const startDate = query.startDate
+        ? FormatDateToStartOfDay(query.startDate)
+        : null;
+      const endDate = query.endDate
+        ? FormatDateToEndOfDay(query.endDate)
+        : null;
+
+      const sortRangeDate: any =
+        startDate && endDate
+          ? {
+              created_at: {
+                gte: new Date(startDate),
+                lte: new Date(endDate),
+              },
+            }
+          : {};
+
+      const whereConditions: any = {
+        deleted: true,
+        OR: [
+          {
+            name: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            description: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+          {
+            short_description: {
+              contains: search,
+              mode: 'insensitive',
+            },
+          },
+        ],
+        ...sortRangeDate,
+      };
+
       const [res, total] = await this.prismaService.$transaction([
         this.prismaService.categories.findMany({
-          where: {
-            deleted: true,
-            OR: [
-              {
-                name: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                description: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                short_description: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-            ],
-          },
+          where: whereConditions,
           skip,
           take: itemsPerPage,
+          orderBy: {
+            created_at: 'desc',
+          },
         }),
         this.prismaService.categories.count({
-          where: {
-            deleted: true,
-            OR: [
-              {
-                name: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                description: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                short_description: {
-                  contains: search,
-                  mode: 'insensitive',
-                },
-              },
-            ],
-          },
+          where: whereConditions,
         }),
       ]);
 
       const lastPage = Math.ceil(total / itemsPerPage);
-      const nextPage = page >= lastPage ? null : page + 1;
-      const prevPage = page <= 1 ? null : page - 1;
+      const paginationInfo = {
+        lastPage,
+        nextPage: page < lastPage ? page + 1 : null,
+        prevPage: page > 1 ? page - 1 : null,
+        currentPage: page,
+        itemsPerPage,
+        total,
+      };
 
       throw new HttpException(
         {
           data: res,
-          pagination: {
-            total,
-            itemsPerPage,
-            lastPage,
-            nextPage,
-            prevPage,
-            currentPage: page,
-          },
+          pagination: paginationInfo,
         },
         HttpStatus.OK,
       );
@@ -210,19 +243,18 @@ export class CategoriesService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new HttpException(
-        { message: 'Lấy danh sách danh mục đã xóa thất bại', error },
-        HttpStatus.BAD_REQUEST,
+      console.log('Lỗi từ categories.service.ts -> findAllDeleted', error);
+      throw new InternalServerErrorException(
+        'Đã có lỗi xảy ra, vui lòng thử lại sau !',
       );
     }
   }
 
-  findOne(id: number) {
+  // ! Get One Category
+  async findOne(id: number) {
     try {
-      const category = this.prismaService.categories.findUnique({
-        where: {
-          id,
-        },
+      const category = await this.prismaService.categories.findUnique({
+        where: { id: Number(id) },
       });
       if (!category) {
         throw new HttpException(
@@ -235,16 +267,17 @@ export class CategoriesService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new HttpException(
-        { message: 'Lấy thông tin danh mục thất bại', error },
-        HttpStatus.BAD_REQUEST,
+      console.log('Lỗi từ categories.service.ts -> findOne', error);
+      throw new InternalServerErrorException(
+        'Đã có lỗi xảy ra, vui lòng thử lại sau !',
       );
     }
   }
 
-  findOneBySlug(slug: string) {
+  // ! Get One Category By Slug
+  async findOneBySlug(slug: string) {
     try {
-      const category = this.prismaService.categories.findUnique({
+      const category = await this.prismaService.categories.findUnique({
         where: {
           slug,
         },
@@ -260,19 +293,19 @@ export class CategoriesService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new HttpException(
-        { message: 'Lấy thông tin danh mục thất bại', error },
-        HttpStatus.BAD_REQUEST,
+      console.log('Lỗi từ categories.service.ts -> findOneBySlug', error);
+      throw new InternalServerErrorException(
+        'Đã có lỗi xảy ra, vui lòng thử lại sau !',
       );
     }
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
+  // ! Update Categories
+  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     try {
-      const findCategories = this.prismaService.categories.findUnique({
-        where: {
-          id,
-        },
+      // ? Check Categories
+      const findCategories = await this.prismaService.categories.findUnique({
+        where: { id: Number(id) },
       });
       if (!findCategories) {
         throw new HttpException(
@@ -280,12 +313,28 @@ export class CategoriesService {
           HttpStatus.NOT_FOUND,
         );
       }
+
       const { name, description, short_description } = updateCategoryDto;
       const slug = MakeSlugger(name);
-      const categories = this.prismaService.categories.update({
-        where: {
-          id,
-        },
+      // ? Check Name and Slug
+      const findCategoriesByName =
+        await this.prismaService.categories.findFirst({
+          where: {
+            name,
+            NOT: {
+              id: Number(id),
+            },
+          },
+        });
+      if (findCategoriesByName) {
+        throw new HttpException(
+          { message: 'Tên danh mục đã tồn tại' },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      // ? Update Categories
+      const categories = await this.prismaService.categories.update({
+        where: { id: Number(id) },
         data: {
           name,
           slug,
@@ -293,6 +342,7 @@ export class CategoriesService {
           short_description,
         },
       });
+
       throw new HttpException(
         { message: 'Cập nhật danh mục thành công', data: categories },
         HttpStatus.OK,
@@ -301,19 +351,19 @@ export class CategoriesService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new HttpException(
-        { message: 'Cập nhật danh mục thất bại', error },
-        HttpStatus.BAD_REQUEST,
+      console.log('Lỗi từ categories.service.ts -> update', error);
+      throw new InternalServerErrorException(
+        'Đã có lỗi xảy ra, vui lòng thử lại sau !',
       );
     }
   }
 
-  softDelete(reqUser, id: number) {
+  // ! Soft Delete Categories
+  async softDelete(reqUser, id: number) {
     try {
-      const findCategories = this.prismaService.categories.findUnique({
-        where: {
-          id,
-        },
+      // ? Check Categories
+      const findCategories = await this.prismaService.categories.findUnique({
+        where: { id: Number(id) },
       });
       if (!findCategories) {
         throw new HttpException(
@@ -321,10 +371,9 @@ export class CategoriesService {
           HttpStatus.NOT_FOUND,
         );
       }
-      const categories = this.prismaService.categories.update({
-        where: {
-          id,
-        },
+      // ? Soft Delete Categories
+      const categories = await this.prismaService.categories.update({
+        where: { id: Number(id) },
         data: {
           deleted: true,
           deleted_by: reqUser.id,
@@ -339,19 +388,19 @@ export class CategoriesService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new HttpException(
-        { message: 'Xóa danh mục thất bại', error },
-        HttpStatus.BAD_REQUEST,
+      console.log('Lỗi từ categories.service.ts -> softDelete', error);
+      throw new InternalServerErrorException(
+        'Đã có lỗi xảy ra, vui lòng thử lại sau !',
       );
     }
   }
 
+  // ! Restore Categories
   async restore(id: number) {
     try {
-      const findCategories = this.prismaService.categories.findUnique({
-        where: {
-          id,
-        },
+      // ? Check Categories
+      const findCategories = await this.prismaService.categories.findUnique({
+        where: { id: Number(id) },
       });
       if (!findCategories) {
         throw new HttpException(
@@ -359,10 +408,9 @@ export class CategoriesService {
           HttpStatus.NOT_FOUND,
         );
       }
-      const categories = this.prismaService.categories.update({
-        where: {
-          id,
-        },
+      // ? Restore Categories
+      const categories = await this.prismaService.categories.update({
+        where: { id: Number(id) },
         data: {
           deleted: false,
           deleted_by: null,
@@ -377,19 +425,19 @@ export class CategoriesService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new HttpException(
-        { message: 'Khôi phục danh mục thất bại', error },
-        HttpStatus.BAD_REQUEST,
+      console.log('Lỗi từ categories.service.ts -> restore', error);
+      throw new InternalServerErrorException(
+        'Đã có lỗi xảy ra, vui lòng thử lại sau !',
       );
     }
   }
 
+  // ! Destroy Categories
   async destroy(id: number) {
     try {
-      const findCategories = this.prismaService.categories.findUnique({
-        where: {
-          id,
-        },
+      // ? Check Categories
+      const findCategories = await this.prismaService.categories.findUnique({
+        where: { id: Number(id) },
       });
       if (!findCategories) {
         throw new HttpException(
@@ -397,10 +445,9 @@ export class CategoriesService {
           HttpStatus.NOT_FOUND,
         );
       }
-      const categories = this.prismaService.categories.delete({
-        where: {
-          id,
-        },
+      // ? Destroy Categories
+      const categories = await this.prismaService.categories.delete({
+        where: { id: Number(id) },
       });
       throw new HttpException(
         { message: 'Xóa danh mục vĩnh viễn thành công', data: categories },
@@ -410,9 +457,9 @@ export class CategoriesService {
       if (error instanceof HttpException) {
         throw error;
       }
-      throw new HttpException(
-        { message: 'Xóa danh mục vĩnh viễn thất bại', error },
-        HttpStatus.BAD_REQUEST,
+      console.log('Lỗi từ categories.service.ts -> destroy', error);
+      throw new InternalServerErrorException(
+        'Đã có lỗi xảy ra, vui lòng thử lại sau !',
       );
     }
   }
