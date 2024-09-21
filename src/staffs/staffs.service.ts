@@ -269,7 +269,7 @@ export class StaffsService {
         );
       }
       const checkLocation = await this.prismaService.locations.findUnique({
-        where: { id: location_id },
+        where: { id: Number(location_id) },
       });
       if (!checkLocation) {
         throw new HttpException('Địa điểm không tồn tại', HttpStatus.NOT_FOUND);
@@ -277,7 +277,7 @@ export class StaffsService {
       const updateStaff = await this.prismaService.staffs.update({
         where: { id: Number(staff_id) },
         data: {
-          locations_id: location_id,
+          locations_id: Number(location_id),
           name,
           phone,
           payment_info,

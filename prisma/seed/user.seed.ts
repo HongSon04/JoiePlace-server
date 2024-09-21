@@ -173,11 +173,11 @@ const number = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 const MakeSlugger = (str: string): string => {
   return slugify(str, {
     replacement: '',
-    remove: undefined, // ? Loại bỏ các ký tự không mong muốn
-    lower: true, // ? Chuyển tất cả ký tự thành chữ thường
-    strict: false, // ? Loại bỏ ký tự không hợp lệ từ URL
-    locale: 'vi', // ? Chuyển đổi ký tự tiếng Việt
-    trim: true, // ? Loại bỏ khoảng trắng ở đầu và cuối chuỗi
+    remove: undefined,
+    lower: true,
+    strict: false,
+    locale: 'vi',
+    trim: true,
   });
 };
 

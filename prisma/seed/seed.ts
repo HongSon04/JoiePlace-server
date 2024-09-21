@@ -1,10 +1,18 @@
 import { PrismaClient } from '@prisma/client';
 import { userSeed } from './user.seed';
+import { locationSeed } from './location.seed';
+import { categoriesSeed } from './categories.seed';
+import { foodSeed } from './food.seed';
+import { menuSeed } from './menu.seed';
 
 const prisma = new PrismaClient();
 
 const seedMap: { [key: string]: (number: number) => Promise<void> } = {
   user: userSeed,
+  location: locationSeed,
+  category: categoriesSeed,
+  food: foodSeed,
+  menu: menuSeed,
 };
 
 const runSeed = async () => {

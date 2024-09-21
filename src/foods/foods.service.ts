@@ -132,7 +132,7 @@ export class FoodsService {
       const itemsPerPage = Number(query.itemsPerPage) || 10;
       const search = query.search || '';
       const skip = (page - 1) * itemsPerPage;
-      const priceSort = query.priceSort.toLowerCase();
+      const priceSort = query?.priceSort?.toLowerCase();
 
       const startDate = query.startDate
         ? FormatDateToStartOfDay(query.startDate)
@@ -201,6 +201,7 @@ export class FoodsService {
         lastPage: lastPage,
         itemsPerPage,
         currentPage: page,
+        total: totalCount,
       };
 
       // Trả về kết quả
@@ -227,7 +228,7 @@ export class FoodsService {
       const itemsPerPage = Number(query.itemsPerPage) || 10;
       const search = query.search || '';
       const skip = (page - 1) * itemsPerPage;
-      const priceSort = query.priceSort.toLowerCase();
+      const priceSort = query?.priceSort?.toLowerCase();
 
       const startDate = query.startDate
         ? FormatDateToStartOfDay(query.startDate)
@@ -296,6 +297,7 @@ export class FoodsService {
         lastPage: lastPage,
         itemsPerPage,
         currentPage: page,
+        total: totalCount,
       };
 
       // Trả về kết quả
@@ -379,7 +381,7 @@ export class FoodsService {
       const itemsPerPage = Number(query.itemsPerPage) || 10;
       const search = query.search || '';
       const skip = (page - 1) * itemsPerPage;
-      const priceSort = query.priceSort.toLowerCase();
+      const priceSort = query?.priceSort?.toLowerCase();
 
       const startDate = query.startDate
         ? FormatDateToStartOfDay(query.startDate)
@@ -449,6 +451,7 @@ export class FoodsService {
         lastPage: lastPage,
         itemsPerPage,
         currentPage: page,
+        total: totalCount,
       };
 
       // Trả về kết quả
@@ -475,7 +478,7 @@ export class FoodsService {
       const itemsPerPage = Number(query.itemsPerPage) || 10;
       const search = query.search || '';
       const skip = (page - 1) * itemsPerPage;
-      const priceSort = query.priceSort.toLowerCase();
+      const priceSort = query?.priceSort?.toLowerCase();
 
       const startDate = query.startDate
         ? FormatDateToStartOfDay(query.startDate)
@@ -549,6 +552,7 @@ export class FoodsService {
         lastPage: lastPage,
         itemsPerPage,
         currentPage: page,
+        total: totalCount,
       };
 
       // Trả về kết quả
@@ -611,7 +615,7 @@ export class FoodsService {
 
       // Check category existence
       const findCategory = await this.prismaService.categories.findUnique({
-        where: { id: category_id },
+        where: { id: Number(category_id) },
       });
       if (!findCategory) {
         throw new HttpException(

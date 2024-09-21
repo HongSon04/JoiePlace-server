@@ -53,6 +53,15 @@ export class MenusService {
         id: Number(foodId),
       }));
 
+      // Check Food Price (Total Amount) equal with price of menu
+      const totalAmount = findFoods.reduce((acc, curr) => acc + curr.price, 0);
+      if (totalAmount !== Number(price)) {
+        throw new HttpException(
+          'Giá của menu không trùng với tổng giá của các món ăn',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       const menus = await this.prismaService.menus.create({
         data: {
           name,
@@ -87,7 +96,7 @@ export class MenusService {
     const itemsPerPage = Number(query.itemsPerPage) || 10;
     const search = query.search || '';
     const skip = (page - 1) * itemsPerPage;
-    const priceSort = query.priceSort.toLowerCase();
+    const priceSort = query?.priceSort?.toLowerCase();
 
     const startDate = query.startDate
       ? FormatDateToStartOfDay(query.startDate)
@@ -205,7 +214,7 @@ export class MenusService {
     const itemsPerPage = Number(query.itemsPerPage) || 10;
     const search = query.search || '';
     const skip = (page - 1) * itemsPerPage;
-    const priceSort = query.priceSort.toLowerCase();
+    const priceSort = query?.priceSort?.toLowerCase();
 
     const startDate = query.startDate
       ? FormatDateToStartOfDay(query.startDate)
@@ -397,9 +406,33 @@ export class MenusService {
         throw new HttpException('Tên menu đã tồn tại', HttpStatus.BAD_REQUEST);
       }
 
+      const findFoods = await this.prismaService.foods.findMany({
+        where: {
+          id: {
+            in: foods,
+          },
+        },
+      });
+
+      if (findFoods.length !== foods.length) {
+        throw new HttpException(
+          'Có món ăn không tồn tại',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       const connectFoods = foods.map((foodId) => ({
         id: foodId,
       }));
+
+      // Check Food Price (Total Amount) equal with price of menu
+      const totalAmount = findFoods.reduce((acc, curr) => acc + curr.price, 0);
+      if (totalAmount !== Number(price)) {
+        throw new HttpException(
+          'Giá của menu không trùng với tổng giá của các món ăn',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
       const menu = await this.prismaService.menus.update({
         where: { id: Number(id) },

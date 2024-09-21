@@ -93,7 +93,7 @@ export class DecorsService {
     const minPrice = Number(query.minPrice) || 0;
     const maxPrice = Number(query.maxPrice) || 999999999999;
 
-    const priceSort = query.priceSort.toLowerCase();
+    const priceSort = query?.priceSort?.toLowerCase();
 
     const startDate = query.startDate
       ? FormatDateToStartOfDay(query.startDate)
@@ -176,6 +176,7 @@ export class DecorsService {
         lastPage: lastPage,
         itemsPerPage,
         currentPage: page,
+total,
       };
 
       throw new HttpException(
@@ -206,7 +207,7 @@ export class DecorsService {
     const minPrice = Number(query.minPrice) || 0;
     const maxPrice = Number(query.maxPrice) || 999999999999;
 
-    const priceSort = query.priceSort.toLowerCase();
+    const priceSort = query?.priceSort?.toLowerCase();
 
     const startDate = query.startDate
       ? FormatDateToStartOfDay(query.startDate)
@@ -289,6 +290,7 @@ export class DecorsService {
         lastPage: lastPage,
         itemsPerPage,
         currentPage: page,
+total,
       };
 
       throw new HttpException(

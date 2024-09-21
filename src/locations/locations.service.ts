@@ -662,7 +662,7 @@ export class LocationsService {
     try {
       const locationId = Number(id);
       const location = await this.prismaService.locations.findUnique({
-        where: { id: locationId },
+        where: { id: Number(locationId) },
       });
       if (!location) {
         throw new HttpException(
@@ -714,7 +714,7 @@ export class LocationsService {
       // Xóa Location Detail
       const locationDetail =
         await this.prismaService.location_details.findUnique({
-          where: { id: locationId },
+          where: { id: Number(locationId) },
         });
       if (locationDetail) {
         const locationDetailImages = [
@@ -730,7 +730,7 @@ export class LocationsService {
           );
         }
         await this.prismaService.location_details.delete({
-          where: { id: locationId },
+          where: { id: Number(locationId) },
         });
       }
 
@@ -739,7 +739,7 @@ export class LocationsService {
       if (location && location.images?.length) {
         await this.cloudinaryService.deleteMultipleImagesByUrl(location.images);
       }
-      await this.prismaService.locations.delete({ where: { id: locationId } });
+      await this.prismaService.locations.delete({ where: { id: Number(locationId) } });
 
       throw new HttpException('Xóa địa điểm thành công', HttpStatus.OK);
     } catch (error) {

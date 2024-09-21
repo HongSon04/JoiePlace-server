@@ -93,7 +93,6 @@ export class FunituresController {
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
-      message: 'Lấy danh sách nội thất thành công',
       data: {
         id: 'number',
         name: 'string',
@@ -136,7 +135,6 @@ export class FunituresController {
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
-      message: 'Lấy danh sách nội thất đã xóa thành công',
       data: {
         id: 'number',
         name: 'string',
@@ -174,11 +172,10 @@ export class FunituresController {
   }
 
   // ! Get One funiture by ID
-  @Get('get/:id')
+  @Get('get/:funitures_id')
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
-      message: 'Lấy nội thất thành công',
       data: {
         id: 'number',
         name: 'string',
@@ -204,7 +201,7 @@ export class FunituresController {
     },
   })
   @ApiOperation({ summary: 'Lấy thông tin nội thất' })
-  findOne(@Param('id') id: number) {
+  findOne(@Param('funitures_id') id: number) {
     return this.funituresService.findOne(id);
   }
 
@@ -213,7 +210,6 @@ export class FunituresController {
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
-      message: 'Lấy nội thất thành công',
       data: {
         id: 'number',
         name: 'string',
@@ -244,7 +240,7 @@ export class FunituresController {
   }
 
   // ! Update funiture
-  @Patch('update/:id')
+  @Patch('update/:funitures_id')
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
@@ -300,7 +296,7 @@ export class FunituresController {
     }),
   )
   update(
-    @Param('id') id: number,
+    @Param('funitures_id') id: number,
     @Body() updateFunitureDto: UpdateFunitureDto,
     @UploadedFiles() files: { images: ImageFunitureDto },
   ) {
@@ -308,7 +304,7 @@ export class FunituresController {
   }
 
   // ! Soft delete funiture
-  @Delete('delete/:id')
+  @Delete('delete/:funitures_id')
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
@@ -328,12 +324,12 @@ export class FunituresController {
     },
   })
   @ApiOperation({ summary: 'Xóa tạm nội thất' })
-  delete(@Request() req, @Param('id') id: number) {
+  delete(@Request() req, @Param('funitures_id') id: number) {
     return this.funituresService.delete(req.user, id);
   }
 
   // ! Restore funiture
-  @Patch('restore/:id')
+  @Patch('restore/:funitures_id')
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
@@ -353,12 +349,12 @@ export class FunituresController {
     },
   })
   @ApiOperation({ summary: 'Khôi phục nội thất' })
-  restore(@Param('id') id: number) {
+  restore(@Param('funitures_id') id: number) {
     return this.funituresService.restore(id);
   }
 
   // ! Hard delete funiture
-  @Delete('destroy/:id')
+  @Delete('destroy/:funitures_id')
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
@@ -378,7 +374,7 @@ export class FunituresController {
     },
   })
   @ApiOperation({ summary: 'Xóa vĩnh viễn nội thất' })
-  destroy(@Param('id') id: number) {
+  destroy(@Param('funitures_id') id: number) {
     return this.funituresService.destroy(id);
   }
 }

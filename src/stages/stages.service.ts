@@ -20,7 +20,7 @@ export class StagesService {
   async create(body: StageDto, files: { images?: Express.Multer.File[] }) {
     try {
       const findLocation = await this.prismaService.locations.findUnique({
-        where: { id: body.location_id },
+        where: { id: Number(body.location_id) },
       });
       if (!findLocation) {
         throw new HttpException(
@@ -48,10 +48,11 @@ export class StagesService {
 
       const stagesRes = await this.prismaService.stages.create({
         data: {
-          location_id: body.location_id,
+          location_id: Number(body.location_id),
           name: body.name,
           description: body.description,
           images: stagesImages as any,
+          capacity: Number(body.capacity),
         },
       });
 
@@ -159,9 +160,10 @@ export class StagesService {
       }
 
       const updateData: any = {
-        location_id: body.location_id,
+        location_id: Number(body.location_id),
         name: body.name,
         description: body.description,
+        capacity: body.capacity,
       };
 
       if (files.images && files.images.length > 0) {

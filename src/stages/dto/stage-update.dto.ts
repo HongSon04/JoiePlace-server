@@ -16,5 +16,9 @@ export class StageUpdateDto {
 
   @ApiProperty()
   @IsOptional()
+  capacity: number;
+
+  @ApiProperty()
+  @IsOptional()
   images: string[];
 }

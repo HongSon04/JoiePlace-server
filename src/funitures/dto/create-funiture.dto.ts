@@ -29,8 +29,8 @@ export class CreateFunitureDto {
   @IsNotEmpty({ message: 'Giá không được để trống' })
   price: number;
 
-  @ApiProperty({ enum: FunitureType }) // Định nghĩa enum để Swagger nhận diện
-  @IsEnum(FunitureType, { message: 'Loại nội thất không hợp lệ' })
+  @ApiProperty({ example: 'table | chair' }) // Định nghĩa enum để Swagger nhận diện
+  @IsEnum(FunitureType, { message: 'Loại nội thất không hợp lệ table | chair' })
   type: FunitureType; // Sử dụng enum ở đây
 
   @ApiProperty({ type: [String] })

@@ -24,26 +24,42 @@ export class SpacesService {
     files: { images?: Express.Multer.File[] },
   ): Promise<string> {
     try {
-      const { location_id } = body;
-      const slug = MakeSlugger(body.name);
-      const spcaceImages = {};
-      if (files.images) {
-        const images = await this.cloudinaryService.uploadMultipleFilesToFolder(
-          files.images,
-          'joieplace/space',
+      const { location_id, name } = body;
+      const slug = MakeSlugger(name);
+
+      // Validate location
+      const findLocation = await this.prismaService.locations.findUnique({
+        where: { id: Number(location_id) },
+      });
+
+      if (!findLocation) {
+        throw new HttpException(
+          'Không tìm thấy địa điểm',
+          HttpStatus.NOT_FOUND,
         );
-        spcaceImages['images'] = images;
-      } else {
+      }
+
+      // Validate images
+      if (!files.images || files.images.length === 0) {
         throw new HttpException(
           'Ảnh không được để trống',
           HttpStatus.BAD_REQUEST,
         );
       }
+
+      // Upload images
+      const spaceImages =
+        await this.cloudinaryService.uploadMultipleFilesToFolder(
+          files.images,
+          'joieplace/space',
+        );
+
+      // Create space
       const spaces = await this.prismaService.spaces.create({
         data: {
           ...body,
           slug,
-          images: spcaceImages as any,
+          images: spaceImages as any,
           location_id: Number(location_id),
         },
       });

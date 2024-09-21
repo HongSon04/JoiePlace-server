@@ -21,6 +21,9 @@ import { MenusModule } from './menus/menus.module';
 import { DecorsModule } from './decors/decors.module';
 import { PartyTypesModule } from './party_types/party_types.module';
 import { FunituresModule } from './funitures/funitures.module';
+import { BookingsModule } from './bookings/bookings.module';
+import { DepositsModule } from './deposits/deposits.module';
+import { PaymentsModule } from './payments/payments.module';
 @Module({
   imports: [
     JwtModule.registerAsync({
@@ -48,6 +51,9 @@ import { FunituresModule } from './funitures/funitures.module';
     DecorsModule,
     PartyTypesModule,
     FunituresModule,
+    BookingsModule,
+    DepositsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -3,7 +3,6 @@ import { IsNotEmpty, IsNumber } from 'class-validator';
 
 export class CreateSpaceDto {
   @ApiProperty()
-  @IsNumber({}, { message: 'Location ID không hợp lệ' })
   @IsNotEmpty({ message: 'Location ID không được để trống' })
   location_id: number;
   @ApiProperty()

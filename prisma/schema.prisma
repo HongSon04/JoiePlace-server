@@ -97,6 +97,7 @@ model stages {
   name        String
   description String
   images      String[]
+  capacity    Int        @default(0)
   created_at  DateTime   @default(now())
   updated_at  DateTime   @updatedAt
   bookings    bookings[]
@@ -174,33 +175,35 @@ model foods {
 }
 
 model menus {
-  id          Int       @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   name        String
-  slug        String    @unique
+  slug        String     @unique
   description String
   price       Int
-  foods       foods[]   @relation("FoodMenus")
-  is_show     Boolean   @default(true)
-  deleted     Boolean   @default(false)
+  foods       foods[]    @relation("FoodMenus")
+  is_show     Boolean    @default(true)
+  deleted     Boolean    @default(false)
   deleted_at  DateTime?
   deleted_by  Int?
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+  bookings    bookings[]
 }
 
 model decors {
-  id                Int       @id @default(autoincrement())
+  id                Int        @id @default(autoincrement())
   name              String
-  slug              String    @unique
+  slug              String     @unique
   description       String
   short_description String?
   images            String[]
   price             Int
-  deleted           Boolean   @default(false)
+  deleted           Boolean    @default(false)
   deleted_at        DateTime?
   deleted_by        Int?
-  created_at        DateTime  @default(now())
-  updated_at        DateTime  @updatedAt
+  created_at        DateTime   @default(now())
+  updated_at        DateTime   @updatedAt
+  bookings          bookings[]
 }
 
 model party_types {
@@ -235,16 +238,13 @@ model funitures {
 
 model deposits {
   id             Int        @id @default(autoincrement())
-  transactionID  Int
-  name           String
+  transactionID  String     @unique
+  name           String?
   phone          String?
-  email          String
+  email          String?
   amount         Int
-  payment_method String
+  payment_method String?
   status         String     @default("pending")
-  deleted        Boolean    @default(false)
-  deleted_at     DateTime?
-  deleted_by     Int?
   created_at     DateTime   @default(now())
   updated_at     DateTime   @updatedAt
   bookings       bookings[]
@@ -262,9 +262,13 @@ model bookings {
   stages            stages    @relation(fields: [stage_id], references: [id])
   deposit_id        Int
   deposits          deposits  @relation(fields: [deposit_id], references: [id])
+  decor_id          Int
+  decors            decors    @relation(fields: [decor_id], references: [id])
+  menu_id           Int
+  menus             menus     @relation(fields: [menu_id], references: [id])
   name              String
   images            String[]
-  accessories       Json[]
+  accessories       Json
   shift             String
   organization_date DateTime
   amount            Int

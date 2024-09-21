@@ -102,7 +102,6 @@ export class FoodsController {
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
-      message: 'Lấy danh sách món ăn thành công',
       data: [
         {
           id: 'number',
@@ -147,8 +146,8 @@ export class FoodsController {
   @ApiQuery({ name: 'minPrice', required: false })
   @ApiQuery({ name: 'maxPrice', required: false })
   @ApiQuery({ name: 'priceSort', required: false, description: 'ASC | DESC' })
-  @ApiQuery({ name: 'startDate', required: false, example: '28-10-2004' })
-  @ApiQuery({ name: 'endDate', required: false, example: '28-10-2024' })
+  @ApiQuery({ name: 'startDate', required: false, description: '28-10-2004' })
+  @ApiQuery({ name: 'endDate', required: false, description: '28-10-2024' })
   findAll(@Query() query: FilterPriceDto) {
     return this.foodsService.findAll(query);
   }
@@ -158,7 +157,6 @@ export class FoodsController {
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
-      message: 'Lấy danh sách món ăn đã xóa thành công',
       data: [
         {
           id: 'number',
@@ -214,7 +212,6 @@ export class FoodsController {
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
-      message: 'Lấy món ăn thành công',
       data: {
         id: 'number',
         name: 'string',
@@ -252,7 +249,6 @@ export class FoodsController {
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
-      message: 'Lấy món ăn thành công',
       data: {
         id: 'number',
         name: 'string',
@@ -290,7 +286,6 @@ export class FoodsController {
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
-      message: 'Lấy món ăn thành công',
       data: [
         {
           id: 'number',
@@ -329,7 +324,6 @@ export class FoodsController {
   @ApiResponse({
     status: HttpStatus.OK,
     example: {
-      message: 'Lấy món ăn thành công',
       data: [
         {
           id: 'number',
